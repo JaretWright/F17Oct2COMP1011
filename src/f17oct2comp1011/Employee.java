@@ -2,15 +2,17 @@
 package f17oct2comp1011;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 /**
  *
  * @author JWright
  */
-public class Employee {
+public abstract class Employee {
     private String firstName, lastName, socialInsuranceNum, position;
     private LocalDate dateOfBirth, dateOfHire;
     private static int nextEmployeeNumber = 100001;
+    private int employeeNum;
     private boolean systemAdministrator;
 
     public Employee(String firstName, String lastName, String socialInsuranceNum, String position, LocalDate dateOfBirth) {
@@ -19,6 +21,8 @@ public class Employee {
         setSocialInsuranceNum(socialInsuranceNum);
         setPosition(position);
         setDateOfBirth(dateOfBirth);
+        employeeNum = nextEmployeeNumber;
+        nextEmployeeNumber++;
     }
 
     /**
@@ -50,7 +54,11 @@ public class Employee {
     }
 
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+          if (validateName(lastName))
+            this.lastName = lastName;
+        else
+            throw new IllegalArgumentException("Last name must start with an "
+                                                + "upper case letter");
     }
 
     public String getSocialInsuranceNum() {
@@ -58,7 +66,11 @@ public class Employee {
     }
 
     public void setSocialInsuranceNum(String socialInsuranceNum) {
-        this.socialInsuranceNum = socialInsuranceNum;
+        if (socialInsuranceNum.matches("\\d{3}\\s\\d{3}\\s\\d{3}"))
+            this.socialInsuranceNum = socialInsuranceNum;
+        else
+            throw new IllegalArgumentException("Social insurance number"
+                    + "must be XXX XXX XXX where X is any number 0-9");
     }
 
     public String getPosition() {
@@ -74,7 +86,12 @@ public class Employee {
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+        int age = Period.between(dateOfBirth, LocalDate.now()).getYears();
+        
+        if (age >= 13 && age <=130)
+            this.dateOfBirth = dateOfBirth;
+        else
+            throw new IllegalArgumentException("Employees must be 13-130 years old");
     }
 
     public LocalDate getDateOfHire() {
@@ -82,17 +99,17 @@ public class Employee {
     }
 
     public void setDateOfHire(LocalDate dateOfHire) {
-        this.dateOfHire = dateOfHire;
+        if (dateOfHire.isBefore(LocalDate.now().minusDays(3)))
+            throw new IllegalArgumentException("Employees must be added "
+                    + "to the system within 3 days");
+        else if (dateOfHire.isAfter(LocalDate.now().plusDays(31)))
+            throw new IllegalArgumentException("Employees must be added "
+                    + "to the system up to 1 month prior to the start date");
+        else
+            this.dateOfHire = dateOfHire;
     }
 
-    public static int getNextEmployeeNumber() {
-        return nextEmployeeNumber;
-    }
-
-    public static void setNextEmployeeNumber(int nextEmployeeNumber) {
-        Employee.nextEmployeeNumber = nextEmployeeNumber;
-    }
-
+ 
     public boolean isSystemAdministrator() {
         return systemAdministrator;
     }
@@ -101,8 +118,5 @@ public class Employee {
         this.systemAdministrator = systemAdministrator;
     }
     
-    
-    
-    
-    
+    public abstract double calculatePay();
 }
